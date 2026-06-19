@@ -3,7 +3,7 @@ ORDEM = 5
 NULO = -1
 
 TAMANHO_CABECALHO = 4 # Tamanho do cabeçalho
-TAMANHO_INT = 4 # Usaremos 4 bytes para representar cada inteiro
+TAMANHO_INT = 4 # 4 bytes para representar cada inteiro
 FORMATO = f'i {ORDEM-1}i {ORDEM-1}i {ORDEM}i'
 
 class Pagina:
@@ -45,24 +45,24 @@ class Pagina:
     pos = 0
 
     # 1. Recupera o numChaves
-    fatia = dados_binarios[pos : pos + TAMANHO_INT]
-    self.numChaves = int.from_bytes(fatia, 'little', signed=True)
+    parte = dados_binarios[pos : pos + TAMANHO_INT]
+    self.numChaves = int.from_bytes(parte, 'little', signed=True)
     pos += TAMANHO_INT
 
     # 2. Recupera as chaves
     for i in range(ORDEM - 1):
-        fatia = dados_binarios[pos : pos + TAMANHO_INT]
-        self.chaves[i] = int.from_bytes(fatia, 'little', signed=True)
+        parte = dados_binarios[pos : pos + TAMANHO_INT]
+        self.chaves[i] = int.from_bytes(parte, 'little', signed=True)
         pos += TAMANHO_INT
 
     # 3. Recupera os offsets
     for i in range(ORDEM - 1):
-        fatia = dados_binarios[pos : pos + TAMANHO_INT]
-        self.offsets[i] = int.from_bytes(fatia, 'little', signed=True)
+        parte = dados_binarios[pos : pos + TAMANHO_INT]
+        self.offsets[i] = int.from_bytes(parte, 'little', signed=True)
         pos += TAMANHO_INT
 
     # 4. Recupera os filhos
     for i in range(ORDEM):
-        fatia = dados_binarios[pos : pos + TAMANHO_INT]
-        self.filhos[i] = int.from_bytes(fatia, 'little', signed=True)
+        parte = dados_binarios[pos : pos + TAMANHO_INT]
+        self.filhos[i] = int.from_bytes(parte, 'little', signed=True)
         pos += TAMANHO_INT
