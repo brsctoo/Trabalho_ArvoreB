@@ -38,7 +38,6 @@ class Pagina:
     for filho in self.filhos:
         partes_bytes.append(filho.to_bytes(TAMANHO_INT, 'little', signed=True))
 
-    # O b''.join() pega a lista de pedaços e "cola" tudo em uma coisa só
     return b''.join(partes_bytes)
 
   def desampacotar(self, dados_binarios: bytes) -> None:
