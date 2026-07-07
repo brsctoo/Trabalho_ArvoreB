@@ -1,5 +1,5 @@
 # Constante global
-ORDEM = 5
+ORDEM = 11
 NULO = -1
 
 TAMANHO_CABECALHO = 4 # Tamanho do cabeçalho

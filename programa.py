@@ -51,9 +51,9 @@ def opcao_executar(nome_arquivo_operacao):
             argumento = partes_operacoes[1].strip()
 
             if operacao == 'b':
-                _executar_busca(arqArvb, arqDados, argumento)
+                executar_busca(arqArvb, arqDados, argumento)
             elif operacao == 'i':
-                _executar_insercao(arqArvb, arqDados, argumento)
+                executar_insercao(arqArvb, arqDados, argumento)
 
             print()
 
@@ -62,7 +62,7 @@ def opcao_executar(nome_arquivo_operacao):
 
     print(f'As operações do arquivo "{nome_arquivo_operacao}" foram executadas com sucesso!')
 
-def _executar_busca(arqArvb, arqDados, chave_str):
+def executar_busca(arqArvb, arqDados, chave_str):
     chave = int(chave_str)
     print(f'Busca pelo registro de chave "{chave}"')
 
@@ -77,11 +77,11 @@ def _executar_busca(arqArvb, arqDados, chave_str):
         tamanho = int.from_bytes(tamanho_bytes, 'little')
 
         registro_bytes = arqDados.read(tamanho)
-        registro_str   = registro_bytes.decode('utf-8', errors='replace')
+        registro_str = registro_bytes.decode('utf-8', errors='replace')
 
         print(f'{registro_str} ({tamanho} bytes - offset {offset_dado})')
 
-def _executar_insercao(arqArvb, arqDados, registro_str):
+def executar_insercao(arqArvb, arqDados, registro_str):
     partes = registro_str.split('|')
     chave  = int(partes[0])
     print(f'Inserção do registro de chave "{chave}"')
@@ -90,7 +90,7 @@ def _executar_insercao(arqArvb, arqDados, registro_str):
         print(f'Erro: chave "{chave}" duplicada')
         return
 
-    # Escreve no fim do arquivo games.dat usando o formato do 1º trabalho
+    # Escreve no fim do arquivo games.dat
     arqDados.seek(0, 2)
     offset_dado = arqDados.tell()
 
@@ -100,13 +100,24 @@ def _executar_insercao(arqArvb, arqDados, registro_str):
     # Grava os 2 bytes indicando o tamanho, seguido da string (SEM \n)
     arqDados.write(tamanho.to_bytes(2, 'little'))
     arqDados.write(registro_bytes)
-    arqDados.flush()
 
     inserir(arqArvb, chave, offset_dado)
 
     print(f'{registro_str} ({tamanho} bytes - offset {offset_dado})')
 
 # -p  Impressão da árvore-B
+def formatar_lista(nome, lista):
+    resultado = f'{nome} = '
+    tamanho = len(lista)
+
+    for i in range(tamanho):
+        resultado += str(lista[i])
+
+        if i < tamanho - 1:
+            resultado += ' | '
+
+    return resultado
+
 def opcao_imprimir():
     if not os.path.exists(CAMINHO_ARVORE):
         print(f"Erro: arquivo '{CAMINHO_ARVORE}' não encontrado.")
@@ -117,15 +128,15 @@ def opcao_imprimir():
         total_pags = proximo_rrn(arqArvb)
 
         for rrn in range(total_pags):
-            p = ler_pagina(arqArvb, rrn)
+            pag = ler_pagina(arqArvb, rrn)
 
             if rrn == rrn_raiz:
                 print('- ' * 20 + 'Raiz ' + '- ' * 20)
 
             print(f'Página {rrn}:')
-            print('Chaves  = ' + ' | '.join(str(c) for c in p.chaves))
-            print('Offsets = ' + ' | '.join(str(o) for o in p.offsets))
-            print('Filhos  = ' + ' | '.join(str(f) for f in p.filhos))
+            print(formatar_lista('Chaves ', pag.chaves))
+            print(formatar_lista('Offsets', pag.offsets))
+            print(formatar_lista('Filhos ', pag.filhos))
 
             if rrn == rrn_raiz:
                 print('- ' * 45)
@@ -142,16 +153,13 @@ def main():
 
     if flag == '-b':
         opcao_criar()
-
     elif flag == '-e':
         if len(sys.argv) < 3:
             print("Erro: informe o arquivo de operações. Ex: python programa.py -e operacoes.txt")
             return
         opcao_executar(sys.argv[2])
-
     elif flag == '-p':
         opcao_imprimir()
-
     else:
         print(f"Erro: flag desconhecida '{flag}'. Use -b, -e ou -p.")
 

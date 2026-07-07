@@ -1,8 +1,7 @@
-import os
 from pagina import Pagina, NULO, ORDEM, TAMANHO_CABECALHO, TAMANHO_INT
 
 # numChaves + chaves + offsets + filhos
-TAMANHO_PAGINA = TAMANHO_INT + (ORDEM - 1) * TAMANHO_INT +(ORDEM - 1) * TAMANHO_INT + ORDEM * TAMANHO_INT
+TAMANHO_PAGINA = TAMANHO_INT + (ORDEM - 1) * TAMANHO_INT + TAMANHO_INT * (ORDEM - 1) + ORDEM * TAMANHO_INT
 
 def calcular_byte_offset(rrn: int) -> int:
     """Calcula o byte-offset da página no arquivo btree.dat a partir do RRN."""
@@ -26,8 +25,8 @@ def escrever_pagina(rrn: int, pag: Pagina, arqArvb):
     arqArvb.write(pag.empacotar())
 
 def proximo_rrn(arqArvb) -> int:
-    """Calcula o RRN que a nova página terá (sempre gravada no fim do arquivo)."""
-    arqArvb.seek(0, os.SEEK_END)
+    """Calcula o RRN da nova página."""
+    arqArvb.seek(0, 2)
     offset_atual = arqArvb.tell()
     return (offset_atual - TAMANHO_CABECALHO) // TAMANHO_PAGINA
 
@@ -71,7 +70,7 @@ def buscaNaArvore(chave: int, rrn: int, arqArvb) -> tuple:
 
 def buscar(arqArvb, chave: int) -> int:
     """
-    Função wrapper chamada pelo main.py.
+    Função chamada pelo main.py.
     Retorna o byte-offset da chave caso encontrada, ou NULO se não existir.
     """
     raiz = ler_cabecalho(arqArvb)
@@ -122,6 +121,7 @@ def divide(chave: int, offset: int, filhoD: int, pag: Pagina, arqArvb):
     pNova.numChaves = j
     pNova.filhos[0] = pag.filhos[meio + 1]
 
+    # Atualiza a página que foi dividida
     pag.numChaves = meio
     pag.chaves = pag.chaves[:meio] + [NULO] * (ORDEM - 1 - meio)
     pag.offsets = pag.offsets[:meio] + [NULO] * (ORDEM - 1 - meio)
@@ -157,30 +157,30 @@ def insereChave(chave: int, offset: int, rrnAtual: int, arqArvb) -> tuple:
 
 def insereNaArvore(chave: int, offset: int, raiz: int, arqArvb) -> int:
     """Trata o crescimento da árvore criando nova raiz se necessário."""
-    chavePro, offsetPro, filhoDpro, promo = insereChave(chave, offset, raiz, arqArvb)
+    chavePro, offsetPro, filhoDireitoPro, promo = insereChave(chave, offset, raiz, arqArvb)
 
     if promo:
-        pNova = Pagina()
-        pNova.chaves[0] = chavePro
-        pNova.offsets[0] = offsetPro
-        pNova.filhos[0] = raiz
-        pNova.filhos[1] = filhoDpro
-        pNova.numChaves += 1
+        pagNova = Pagina()
+        pagNova.chaves[0] = chavePro
+        pagNova.offsets[0] = offsetPro
+        pagNova.filhos[0] = raiz
+        pagNova.filhos[1] = filhoDireitoPro
+        pagNova.numChaves += 1
 
         raiz_nova = proximo_rrn(arqArvb)
-        escrever_pagina(raiz_nova, pNova, arqArvb)
+        escrever_pagina(raiz_nova, pagNova, arqArvb)
         return raiz_nova
 
     return raiz
 
 def inserir(arqArvb, chave: int, offset: int):
-    """Função wrapper chamada pelo main.py para inserir uma chave na árvore."""
+    """Função chamada pelo main.py para inserir uma chave na árvore."""
     raiz = ler_cabecalho(arqArvb)
     nova_raiz = insereNaArvore(chave, offset, raiz, arqArvb)
     escrever_cabecalho(arqArvb, nova_raiz)
 
 def criar_indice_b(caminho_dados, caminho_arvore) -> bool:
-    """Lê o arquivo de dados completo (formato binário com indicador de tamanho) e cria a árvore."""
+    """Lê o arquivo de dados completo e cria a árvore."""
     try:
         with open(caminho_arvore, 'w+b') as arqArvb:
             raiz = 0
@@ -201,7 +201,7 @@ def criar_indice_b(caminho_dados, caminho_arvore) -> bool:
                     # Lê o tamanho do registro
                     linha_bytes = dados.read(tamanho)
 
-                    # Decodific
+                    # Decodifica
                     linha_str = linha_bytes.decode('utf-8', errors='replace').strip()
                     if not linha_str:
                         continue
@@ -213,7 +213,6 @@ def criar_indice_b(caminho_dados, caminho_arvore) -> bool:
                     try:
                         raiz = insereNaArvore(chave, offset, raiz, arqArvb)
                     except ValueError:
-                        # Ignora chaves duplicadas
                         pass
 
             escrever_cabecalho(arqArvb, raiz)
