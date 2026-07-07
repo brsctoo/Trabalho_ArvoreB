@@ -1,5 +1,5 @@
 # Constante global
-ORDEM = 11
+ORDEM = 5
 NULO = -1
 
 TAMANHO_CABECALHO = 4 # Tamanho do cabeçalho
@@ -20,8 +20,8 @@ class Pagina:
     return self.numChaves == ORDEM - 1
 
   def empacotar(self) -> bytes:
-    """Transforma a página em bytes usando uma lista normal."""
-    partes_bytes = [] # Uma lista comum do Python
+    """Transforma a página em bytes."""
+    partes_bytes = []
 
     # 1. Guarda o numChaves
     partes_bytes.append(self.numChaves.to_bytes(TAMANHO_INT, 'little', signed=True))
@@ -44,24 +44,24 @@ class Pagina:
     """Reconstrói a página"""
     pos = 0
 
-    # 1. Recupera o numChaves
+    # 1. Guarda o numChaves
     parte = dados_binarios[pos : pos + TAMANHO_INT]
     self.numChaves = int.from_bytes(parte, 'little', signed=True)
     pos += TAMANHO_INT
 
-    # 2. Recupera as chaves
+    # 2. Guarda as chaves
     for i in range(ORDEM - 1):
         parte = dados_binarios[pos : pos + TAMANHO_INT]
         self.chaves[i] = int.from_bytes(parte, 'little', signed=True)
         pos += TAMANHO_INT
 
-    # 3. Recupera os offsets
+    # 3. Guarda os offsets
     for i in range(ORDEM - 1):
         parte = dados_binarios[pos : pos + TAMANHO_INT]
         self.offsets[i] = int.from_bytes(parte, 'little', signed=True)
         pos += TAMANHO_INT
 
-    # 4. Recupera os filhos
+    # 4. Guarda os filhos
     for i in range(ORDEM):
         parte = dados_binarios[pos : pos + TAMANHO_INT]
         self.filhos[i] = int.from_bytes(parte, 'little', signed=True)

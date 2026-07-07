@@ -81,7 +81,7 @@ def buscar(arqArvb, chave: int) -> int:
     return NULO
 
 def insereChavePromo(chave: int, offset: int, filhoD: int, pag: Pagina):
-    """Insere chave, OFFSET e filho direito na página, ajustando espaço se necessário."""
+    """Insere chave, OFFSET e filho direito na página."""
     if pag.esta_cheia():
         pag.chaves.append(NULO)
         pag.offsets.append(NULO)
@@ -156,7 +156,7 @@ def insereChave(chave: int, offset: int, rrnAtual: int, arqArvb) -> tuple:
             return nova_chave, novo_offset, novo_filhoD, True
 
 def insereNaArvore(chave: int, offset: int, raiz: int, arqArvb) -> int:
-    """Trata o crescimento da árvore criando nova raiz se necessário."""
+    """Crescimento da árvore criando nova raiz se necessário."""
     chavePro, offsetPro, filhoDireitoPro, promo = insereChave(chave, offset, raiz, arqArvb)
 
     if promo:
@@ -219,5 +219,5 @@ def criar_indice_b(caminho_dados, caminho_arvore) -> bool:
 
         return True
     except Exception as e:
-        print(f"Erro detalhado na criação do índice: {e}")
+        print(f"Erro na criação do índice: {e}")
         return False

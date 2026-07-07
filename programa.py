@@ -97,7 +97,7 @@ def executar_insercao(arqArvb, arqDados, registro_str):
     registro_bytes = registro_str.encode('utf-8')
     tamanho = len(registro_bytes)
 
-    # Grava os 2 bytes indicando o tamanho, seguido da string (SEM \n)
+    # Grava os 2 bytes indicando o tamanho, seguido da string
     arqDados.write(tamanho.to_bytes(2, 'little'))
     arqDados.write(registro_bytes)
 
